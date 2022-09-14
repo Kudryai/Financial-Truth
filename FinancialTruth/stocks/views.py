@@ -6,4 +6,10 @@ class StockView(View):
     
     def get(self, request):
         stocks = Stocks.objects.all()
-        return render(request, 'stocks/stocks_list.html', {'stocks_list': stocks})
+        return render(request, 'stocks/stocks.html', {'stocks_list': stocks})
+
+class StockDetailView(View):
+
+    def get(self, request, slug):
+        stock = Stocks.objects.get(tiker=slug)
+        return render(request, 'stocks/stocks_detail.html', {'stock': stock})

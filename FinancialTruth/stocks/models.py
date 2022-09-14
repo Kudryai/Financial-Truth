@@ -1,5 +1,7 @@
 from django.db import models
-
+from PIL import Image
+from PIL import ImageFilter
+from PIL.Image import Resampling
 # Create your models here.
 class Category(models.Model):
     name = models.CharField('Категория', max_length=150)
@@ -14,19 +16,27 @@ class Category(models.Model):
         verbose_name_plural = 'Категории'
 
 class Stocks(models.Model):
-    name = models.CharField('Акция', max_length=100)
-    tiker = models.CharField('Тикер', max_length=10)
-    description = description = models.TextField('Описание')
-    logo = models.ImageField('Логотип', upload_to='logo/')
-    country = models.CharField('Страна', max_length=100)
-    dividend = models.PositiveIntegerField('Дивиденды', default =0 )
-    price = models.PositiveIntegerField('Цена',default =0)
-    proffit_52 = models.IntegerField('Профит за 52 недели', help_text='Указывать в процентах',default =0)
-    weight_to_index = models.PositiveIntegerField('Вес в индексе', help_text='Указывать в процентах',default =0)
+    name = models.CharField('Акция', max_length=100,null=True)
+    tiker = models.CharField('Тикер', max_length=10,null=True)
+    description = models.TextField('Описание',null=True)
+    logo = models.ImageField('Логотип', upload_to='logo/',null=True)
+    country = models.CharField('Страна', max_length=100,null=True)
+    dividend = models.FloatField('Дивиденды', default =0,null=True)
+    price = models.FloatField('Цена',default =0,null=True)
+    proffit_52 = models.TextField('Профит за 52 недели', help_text='Указывать в процентах',default =0,null=True)
+    weight_to_index = models.FloatField('Вес в индексе', help_text='Указывать в процентах',default =0,null=True)
     category = models.ForeignKey(Category, verbose_name='Категория', on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return self.name
+
+    def save(self):
+        super().save()
+        img = Image.open(self.logo.path)
+        if img.height > 500 or img.width > 500:
+            output_size = (400, 400)
+            img.thumbnail(output_size)
+            img.save(self.logo.path)
 
     class Meta:
         verbose_name = 'Акция'
