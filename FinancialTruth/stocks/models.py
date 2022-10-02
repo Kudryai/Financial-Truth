@@ -2,6 +2,8 @@ from django.db import models
 from PIL import Image
 from PIL import ImageFilter
 from PIL.Image import Resampling
+from django.urls import reverse
+
 # Create your models here.
 class Category(models.Model):
     name = models.CharField('Категория', max_length=150)
@@ -17,7 +19,7 @@ class Category(models.Model):
 
 class Stocks(models.Model):
     name = models.CharField('Акция', max_length=100,null=True)
-    tiker = models.CharField('Тикер', max_length=10,null=True)
+    tiker = models.CharField('Тикер', max_length=10,null=True, unique=True)
     description = models.TextField('Описание',null=True)
     logo = models.ImageField('Логотип', upload_to='logo/',null=True)
     country = models.CharField('Страна', max_length=100,null=True)
@@ -26,9 +28,12 @@ class Stocks(models.Model):
     proffit_52 = models.TextField('Профит за 52 недели', help_text='Указывать в процентах',default =0,null=True)
     weight_to_index = models.FloatField('Вес в индексе', help_text='Указывать в процентах',default =0,null=True)
     category = models.ForeignKey(Category, verbose_name='Категория', on_delete=models.SET_NULL, null=True)
-
+    draft = models.BooleanField('Больше не в индексе', default = False)
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse('stocks_detail', kwargs={'slug': self.tiker})
 
     def save(self):
         super().save()
@@ -37,10 +42,14 @@ class Stocks(models.Model):
             output_size = (400, 400)
             img.thumbnail(output_size)
             img.save(self.logo.path)
+    
+    def get_review(self):
+        return self.reviews_set.filter(parent__isnull=True)
 
     class Meta:
         verbose_name = 'Акция'
         verbose_name_plural = 'Акции'
+
 
 class RatingStar(models.Model):
     value = models.PositiveSmallIntegerField('Значение', default=0)
