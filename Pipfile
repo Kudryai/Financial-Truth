@@ -10,6 +10,7 @@ pillow = "*"
 mysqlclient = "==2.1.1"
 pymysql = "*"
 python-dotenv = "*"
+django-ckeditor = "*"
 
 [dev-packages]
 
